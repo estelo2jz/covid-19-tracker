@@ -3,14 +3,18 @@ import {
   MenuItem,
   FormControl,
   Select,
+  Card, 
+  CardContent
 } from '@material-ui/core';
-import './App.css';
+import './styles/App.scss';
 
 import InfoBox from './components/InfoBox';
+import Map from './components/Map';
 
 function App() {
   const [countries, setCountries] = useState([]);
   const [country, setCountry] = useState('worldwide');
+  const [countryInfo, setCountryInfo] = useState({});
 
   // STATE = How to write a variable in REACT
 
@@ -39,7 +43,6 @@ function App() {
             name: country.country, // United States, United Kingdom, France
             value: country.countryInfo.iso2 // UK, USA, FR
           }));
-
           setCountries(countries);
         });
     };
@@ -47,54 +50,73 @@ function App() {
     getCountriesData();
   }, []);
 
-  const onCountryChange = (event) => {
+  const onCountryChange = async (event) => {
     const countryCode = event.target.value
     console.log("YOOO >>>>", countryCode);
+    
+    // https://disease.sh/v3/covid-19/all
+    // https://disease.sh/v3/covid-19/countries/[COUNTRY_CODE]
+    const url = countryCode === 'worldwide' 
+      ? 'https://disease.sh/v3/covid-19/all' 
+      : `https://disease.sh/v3/covid-19/countries/${countryCode}`;
+    
+    await fetch(url)
+    .then(response => response.json())
+    .then(data => {
+      setCountry(countryCode);
 
-    setCountry(countryCode);
-  }
+      // all of the data from the country response
+      setCountryInfo(data);
+    })
+  };
+
+  console.log("COUNTRY INFO >>>", countryInfo);
 
   return (
     <div className="app">
-      <div className="app__header">
-        <h1>COVID-19 Tracker</h1>
-        <FormControl className="app__dropdown">
-          <Select 
-            variant="outlined" 
-            onChange={onCountryChange}
-            value={country}
-          >
-            <MenuItem value="worldwide">Worldwide</MenuItem>
-            {/* loop throught all the countires and show a drop down list of the options */}
-            {
-              countries.map(country => (
-                <MenuItem value={country.value}>{country.name}</MenuItem>
-              ))
-            }
-            {/* <MenuItem value="worldwide">Worldwide</MenuItem>
-            <MenuItem value="worldwide">Option Two</MenuItem>
-            <MenuItem value="worldwide">Option Three</MenuItem>
-            <MenuItem value="worldwide">Option Four</MenuItem> */}
-          </Select>
-        </FormControl>
+      <div className="app__left">
+        <div className="app__header">
+          <h1>COVID-19 Tracker</h1>
+          <FormControl className="app__dropdown">
+            <Select 
+              variant="outlined" 
+              onChange={onCountryChange}
+              value={country}
+            >
+              <MenuItem value="worldwide">Worldwide</MenuItem>
+              {/* loop throught all the countires and show a drop down list of the options */}
+              {
+                countries.map(country => (
+                  <MenuItem value={country.value}>{country.name}</MenuItem>
+                ))
+              }
+              {/* <MenuItem value="worldwide">Worldwide</MenuItem>
+              <MenuItem value="worldwide">Option Two</MenuItem>
+              <MenuItem value="worldwide">Option Three</MenuItem>
+              <MenuItem value="worldwide">Option Four</MenuItem> */}
+            </Select>
+          </FormControl>
+        </div>
+
+        {/* Header */}
+        {/* Title + Select input dropdown field */}
+        <div className="app__stats">
+          <InfoBox title="Coronavirus Cases" cases={123} total={2000} />
+          <InfoBox title="Recovered" cases={1234} total={3000} />
+          <InfoBox title="Deaths" cases={12345} total={4000} />
+        </div>
+
+        {/* Map */}
+        <Map />
       </div>
-
-      {/* Header */}
-      {/* Title + Select input dropdown field */}
-
-      <div className="app__stats">
-        <InfoBox title="Coronavirus Cases" total={2000} />
-        <InfoBox title="Recovered" total={3000} />
-        <InfoBox title="Deaths" total={4000} />
-        {/* InfoBoxes title="Coronavirus cases" */}
-        {/* InfoBoxes title="Coronavirus recoveries" */}
-        {/* InfoBoxes */}
-      </div>
-
-      {/* Table */}
-      {/* Graph */}
-
-      {/* Map */}
+      <Card className="app__right">
+        <CardContent>
+          <h3>Live Cases by Country</h3>
+          {/* Table */}
+          <h3>World new cases</h3>
+          {/* Graph */}
+        </CardContent>
+      </Card>
     </div>
   );
 }
