@@ -11,6 +11,8 @@ import './styles/App.scss';
 import InfoBox from './components/InfoBox';
 import Map from './components/Map';
 import Table from './components/Table';
+import LineGraph from './components/LineGraph';
+import { sortData } from './util';
 
 function App() {
   const [countries, setCountries] = useState([]);
@@ -51,9 +53,11 @@ function App() {
 
           const countries = data.map((country) => ({
             name: country.country, // United States, United Kingdom, France
-            value: country.countryInfo.iso2 // UK, USA, FR
+            value: country.countryInfo.iso2, // UK, USA, FR
           }));
-          setTableData(data);
+          
+          const sortedData = sortData(data);
+          setTableData(sortedData);
           setCountries(countries);
         });
     };
@@ -126,7 +130,7 @@ function App() {
           {/* countires contains the data */}
           <Table countries={tableData} />
           <h3>World new cases</h3>
-          {/* Graph */}
+          <LineGraph />
         </CardContent>
       </Card>
     </div>
