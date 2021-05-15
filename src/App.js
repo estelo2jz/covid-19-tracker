@@ -10,11 +10,21 @@ import './styles/App.scss';
 
 import InfoBox from './components/InfoBox';
 import Map from './components/Map';
+import Table from './components/Table';
 
 function App() {
   const [countries, setCountries] = useState([]);
   const [country, setCountry] = useState('worldwide');
   const [countryInfo, setCountryInfo] = useState({});
+  const [tableData, setTableData] = useState([]);
+
+  useState(() => {
+    fetch("https://disease.sh/v3/covid-19/all")
+      .then(response => response.json())
+      .then(data => {
+        setCountryInfo(data)
+      })
+  }, []);
 
   // STATE = How to write a variable in REACT
 
@@ -43,6 +53,7 @@ function App() {
             name: country.country, // United States, United Kingdom, France
             value: country.countryInfo.iso2 // UK, USA, FR
           }));
+          setTableData(data);
           setCountries(countries);
         });
     };
@@ -51,8 +62,7 @@ function App() {
   }, []);
 
   const onCountryChange = async (event) => {
-    const countryCode = event.target.value
-    console.log("YOOO >>>>", countryCode);
+    const countryCode = event.target.value;
     
     // https://disease.sh/v3/covid-19/all
     // https://disease.sh/v3/covid-19/countries/[COUNTRY_CODE]
@@ -61,13 +71,13 @@ function App() {
       : `https://disease.sh/v3/covid-19/countries/${countryCode}`;
     
     await fetch(url)
-    .then(response => response.json())
-    .then(data => {
-      setCountry(countryCode);
+      .then((response) => response.json())
+      .then((data) => {
+        setCountry(countryCode);
 
-      // all of the data from the country response
-      setCountryInfo(data);
-    })
+        // all of the data from the country response
+        setCountryInfo(data);
+      })
   };
 
   console.log("COUNTRY INFO >>>", countryInfo);
@@ -101,9 +111,9 @@ function App() {
         {/* Header */}
         {/* Title + Select input dropdown field */}
         <div className="app__stats">
-          <InfoBox title="Coronavirus Cases" cases={123} total={2000} />
-          <InfoBox title="Recovered" cases={1234} total={3000} />
-          <InfoBox title="Deaths" cases={12345} total={4000} />
+          <InfoBox title="Coronavirus Cases" cases={countryInfo.todayCases} total={countryInfo.cases} />
+          <InfoBox title="Recovered" cases={countryInfo.todayRecovered} total={countryInfo.recovered} />
+          <InfoBox title="Deaths" cases={countryInfo.todayDeaths} total={countryInfo.deaths} />
         </div>
 
         {/* Map */}
@@ -112,7 +122,9 @@ function App() {
       <Card className="app__right">
         <CardContent>
           <h3>Live Cases by Country</h3>
-          {/* Table */}
+          {/* passing data from API to Table component "prop-drilling" */}
+          {/* countires contains the data */}
+          <Table countries={tableData} />
           <h3>World new cases</h3>
           {/* Graph */}
         </CardContent>
